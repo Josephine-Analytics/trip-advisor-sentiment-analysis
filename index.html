@@ -89,9 +89,9 @@
     background:var(--parchment);
     color:var(--ink-deep);
     border-radius:var(--radius);
-    padding:24px;
+    padding:18px;
     position:relative;
-        overflow-y:auto; overflow-x:hidden;
+    overflow-y:auto; overflow-x:hidden;
     box-shadow:0 30px 60px -20px rgba(0,0,0,0.5);
     flex:1 1 auto; min-height:0;
     display:flex; flex-direction:column;
@@ -109,7 +109,7 @@
     letter-spacing:0.1em; color:rgba(16,32,46,0.55); margin-bottom:10px; display:block;
   }
   textarea{
-    width:100%; flex:1 1 auto; min-height:90px; resize:none;
+    width:100%; flex:1 1 auto; min-height:60px; resize:none;
     border:none; background:transparent; outline:none;
     font-family:'Fraunces', serif; font-size:22px; line-height:1.5; color:var(--ink-deep);
     padding:0; margin-bottom:14px;
@@ -137,7 +137,7 @@
   .hint{ font-size:12px; color:rgba(16,32,46,0.5); }
 
   /* RESULT */
-  .result-zone{ height:150px; margin-top:10px; position:relative; flex:0 0 auto; }
+  .result-zone{ height:110px; margin-top:6px; position:relative; flex:0 0 auto; }
   .verdict{
     display:none;
     position:absolute; inset:0;
@@ -166,7 +166,7 @@
   .stamp.neutral{ color:var(--neutral); }
 
   .ledger{ font-family:'IBM Plex Mono', monospace; font-size:12px; }
-  .ledger-row{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .ledger-row{ display:flex; align-items:center; gap:10px; margin-bottom:3px; }
   .ledger-row .lbl{ width:64px; text-transform:uppercase; letter-spacing:0.04em; color:rgba(16,32,46,0.55); }
   .ledger-row .bar-track{ flex:1; height:6px; background:rgba(16,32,46,0.1); border-radius:4px; overflow:hidden; }
   .ledger-row .bar-fill{ height:100%; border-radius:4px; transition:width .5s ease; }
