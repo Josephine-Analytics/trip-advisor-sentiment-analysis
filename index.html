@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Front Desk — TripAdvisor Sentiment Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10202E;
+    --ink-deep:#0B1720;
+    --brass:#C9A35B;
+    --brass-bright:#DDBB78;
+    --parchment:#EFE7D3;
+    --parchment-dim:#E3DAC2;
+    --text-on-ink:#EFE7D3;
+    --text-muted:rgba(239,231,211,0.58);
+    --positive:#5C8A6A;
+    --negative:#A6432F;
+    --neutral:#8A7F63;
+    --radius:14px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html, body{ height:100%; }
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(201,163,91,0.10), transparent 60%),
+      var(--ink);
+    color:var(--text-on-ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+
+  .wrap{ max-width:1400px; height:100vh; margin:0 auto; padding:0 40px; display:flex; flex-direction:column; }
+
+  /* NAV */
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; border-bottom:1px solid rgba(201,163,91,0.18);
+    flex:0 0 auto;
+  }
+  .wordmark{
+    font-family:'Fraunces', serif; font-weight:600; font-size:19px;
+    letter-spacing:0.01em;
+  }
+  .wordmark span{ color:var(--brass); }
+  .nav-links{ display:flex; gap:24px; font-size:13px; }
+  .nav-links a{
+    color:var(--text-muted); text-decoration:none; letter-spacing:0.03em;
+    text-transform:uppercase; border-bottom:1px solid transparent;
+    transition:color .2s, border-color .2s;
+  }
+  .nav-links a:hover{ color:var(--brass-bright); border-color:var(--brass-bright); }
+
+  /* HERO */
+  .hero{
+    display:flex; flex-direction:column; gap:14px;
+    padding:16px 0; align-items:stretch;
+    flex:1 1 auto; min-height:0;
+  }
+  @media (max-width:860px){ .hero{ grid-template-columns:1fr; gap:36px; padding:40px 0 24px; } }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.12em;
+    color:var(--brass); text-transform:uppercase; margin-bottom:18px;
+  }
+  h1{
+    font-family:'Fraunces', serif; font-weight:600; font-size:34px; line-height:1.08;
+    margin:0 0 12px; letter-spacing:-0.01em;
+  }
+  h1 em{ font-style:italic; color:var(--brass-bright); }
+  .lede{
+    font-size:14px; line-height:1.55; color:var(--text-muted); max-width:none; margin:0 0 16px;
+  }
+
+  .stat-row{ display:flex; gap:28px; flex-wrap:wrap; justify-content:space-between; max-width:520px; }
+  .stat{ font-family:'IBM Plex Mono', monospace; }
+  .stat .num{ font-size:22px; color:var(--brass-bright); display:block; }
+  .stat .label{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; }
+
+  /* CARD */
+  .card{
+    background:var(--parchment);
+    color:var(--ink-deep);
+    border-radius:var(--radius);
+    padding:24px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.5);
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(16,32,46,0.035) 0px, rgba(16,32,46,0.035) 1px, transparent 1px, transparent 32px);
+  }
+  .card::before{
+    content:"GUEST COMMENT CARD";
+    position:absolute; top:16px; right:22px;
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.14em;
+    color:rgba(16,32,46,0.32);
+  }
+  .card-label{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:0.1em; color:rgba(16,32,46,0.55); margin-bottom:10px; display:block;
+  }
+  textarea{
+    width:100%; flex:1 1 auto; min-height:90px; resize:none;
+    border:none; background:transparent; outline:none;
+    font-family:'Fraunces', serif; font-size:22px; line-height:1.5; color:var(--ink-deep);
+    padding:0; margin-bottom:14px;
+  }
+  textarea::placeholder{ color:rgba(16,32,46,0.35); font-style:italic; }
+
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; padding:6px 12px;
+    border:1px solid rgba(16,32,46,0.2); border-radius:100px; background:transparent;
+    color:rgba(16,32,46,0.65); cursor:pointer; transition:all .15s;
+  }
+  .chip:hover{ border-color:var(--ink-deep); color:var(--ink-deep); }
+
+  .submit-row{ display:flex; align-items:center; gap:16px; flex:0 0 auto; }
+  button.stamp-btn{
+    font-family:'Fraunces', serif; font-weight:600; font-size:15px;
+    background:var(--ink-deep); color:var(--parchment);
+    border:none; border-radius:100px; padding:13px 26px; cursor:pointer;
+    letter-spacing:0.01em;
+    transition:transform .15s, background .15s;
+  }
+  button.stamp-btn:hover:not(:disabled){ background:#1a3244; transform:translateY(-1px); }
+  button.stamp-btn:disabled{ opacity:0.55; cursor:default; }
+  .hint{ font-size:12px; color:rgba(16,32,46,0.5); }
+
+  /* RESULT */
+  .result-zone{ height:150px; margin-top:10px; position:relative; flex:0 0 auto; }
+  .verdict{
+    display:none;
+    position:absolute; inset:0;
+    padding:16px 170px 8px 0;
+    border-top:1px dashed rgba(16,32,46,0.22);
+    overflow:hidden;
+  }
+  .verdict.show{ display:block; }
+  @keyframes stampIn{
+    0%{ opacity:0; transform:scale(1.4) rotate(-14deg); }
+    60%{ opacity:1; }
+    100%{ opacity:1; transform:scale(1) rotate(-6deg); }
+  }
+  .stamp{
+    font-family:'Fraunces', serif; font-weight:700; font-size:20px; text-transform:uppercase;
+    letter-spacing:0.06em; border:3px solid currentColor; border-radius:10px;
+    padding:10px 18px; transform:rotate(-6deg); white-space:nowrap;
+    position:absolute; bottom:12px; right:8px;
+    animation:stampIn .38s cubic-bezier(.2,1.4,.4,1);
+  }
+  .stamp::after{
+    content:""; position:absolute; inset:3px; border:1px solid currentColor; border-radius:7px; opacity:0.5;
+  }
+  .stamp.positive{ color:var(--positive); }
+  .stamp.negative{ color:var(--negative); }
+  .stamp.neutral{ color:var(--neutral); }
+
+  .ledger{ font-family:'IBM Plex Mono', monospace; font-size:12px; }
+  .ledger-row{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .ledger-row .lbl{ width:64px; text-transform:uppercase; letter-spacing:0.04em; color:rgba(16,32,46,0.55); }
+  .ledger-row .bar-track{ flex:1; height:6px; background:rgba(16,32,46,0.1); border-radius:4px; overflow:hidden; }
+  .ledger-row .bar-fill{ height:100%; border-radius:4px; transition:width .5s ease; }
+  .ledger-row .pct{ width:44px; text-align:right; color:rgba(16,32,46,0.7); }
+
+  .status-msg{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; color:rgba(16,32,46,0.55);
+    padding:20px 0 4px; display:none;
+  }
+  .status-msg.show{ display:block; }
+  .status-msg.error{ color:var(--negative); }
+
+  /* FOOTER */
+  footer{
+    border-top:1px solid rgba(201,163,91,0.18); margin-top:0; padding:14px 0;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px;
+    font-size:11px; color:var(--text-muted);
+    flex:0 0 auto;
+  }
+  footer a{ color:var(--brass-bright); text-decoration:none; }
+  footer a:hover{ text-decoration:underline; }
+  footer strong{ color:var(--brass-bright); font-weight:600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <div class="wordmark">The Front Desk<span>.</span></div>
+    <div class="nav-links">
+      <a href="https://github.com/Josephine-Analytics/trip-advisor-sentiment-analysis" target="_blank">Code</a>
+      <a href="https://huggingface.co/JosephineNamyalo/Sentiment_Model" target="_blank">Model</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Sentiment desk · est. 2026</div>
+      <h1>Hand us a review. We'll read <em>the room</em>.</h1>
+      <p class="lede">A fine-tuned DistilBERT model trained on hotel reviews, reading tone the way a front-desk manager reads a guest's face even before they say a word.</p>
+      <div class="stat-row">
+        <div class="stat"><span class="num">88%</span><span class="label">Accuracy</span></div>
+        <div class="stat"><span class="num">3</span><span class="label">Sentiment classes</span></div>
+        <div class="stat"><span class="num">&lt;1s</span><span class="label">Warm response</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="card-label">Write your stay, honestly</label>
+      <textarea id="reviewInput" placeholder="e.g. The pool was closed all weekend and nobody told us at check-in…"></textarea>
+
+      <div class="chips">
+        <button class="chip" data-text="Great location, friendly staff, would stay again">🙂 positive example</button>
+        <button class="chip" data-text="It was fine, nothing special, an average stay">😐 neutral example</button>
+        <button class="chip" data-text="The room was dirty and the staff were rude, worst stay ever">🙁 negative example</button>
+      </div>
+
+      <div class="submit-row">
+        <button class="stamp-btn" id="submitBtn">Stamp it →</button>
+        <span class="hint">Free-tier server — first request may take ~50s to wake</span>
+      </div>
+
+      <div class="result-zone">
+        <div class="status-msg" id="statusMsg"></div>
+        <div class="verdict" id="verdict">
+          <div class="stamp" id="stampEl">Positive</div>
+          <div class="ledger" id="ledger"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Built by <strong>Josephine Analytics</strong> · fine-tuned DistilBERT model on the TripAdvisor hotel reviews dataset</span>
+    <span>API: <a href="https://trip-advisor-sentiment-analysis.onrender.com" target="_blank">trip-advisor-sentiment-analysis.onrender.com</a></span>
+  </footer>
+
+</div>
+
+<script>
+  const API_URL = "https://trip-advisor-sentiment-analysis.onrender.com/predict";
+
+  const input = document.getElementById('reviewInput');
+  const btn = document.getElementById('submitBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  const verdict = document.getElementById('verdict');
+  const stampEl = document.getElementById('stampEl');
+  const ledger = document.getElementById('ledger');
+
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      input.value = chip.dataset.text;
+      input.focus();
+    });
+  });
+
+  const colors = { positive: '#5C8A6A', negative: '#A6432F', neutral: '#8A7F63' };
+
+  function setStatus(msg, isError) {
+    statusMsg.textContent = msg;
+    statusMsg.classList.toggle('show', !!msg);
+    statusMsg.classList.toggle('error', !!isError);
+  }
+
+  function renderVerdict(data) {
+    const sentiment = data.sentiment;
+    stampEl.textContent = sentiment;
+    stampEl.className = 'stamp ' + sentiment;
+
+    ledger.innerHTML = '';
+    ['positive', 'neutral', 'negative'].forEach(label => {
+      const pct = Math.round((data.confidence[label] || 0) * 100);
+      const row = document.createElement('div');
+      row.className = 'ledger-row';
+      row.innerHTML = `
+        <span class="lbl">${label}</span>
+        <span class="bar-track"><span class="bar-fill" style="width:0%; background:${colors[label]}"></span></span>
+        <span class="pct">${pct}%</span>
+      `;
+      ledger.appendChild(row);
+      requestAnimationFrame(() => {
+        row.querySelector('.bar-fill').style.width = pct + '%';
+      });
+    });
+
+    verdict.classList.remove('show');
+    void verdict.offsetWidth; // restart animation
+    verdict.classList.add('show');
+  }
+
+  async function submitReview() {
+    const text = input.value.trim();
+    if (!text) {
+      setStatus('Write a review first — even a short one.', true);
+      verdict.classList.remove('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Reading…';
+    verdict.classList.remove('show');
+    setStatus('Waking the model up — this can take up to a minute on a cold start…');
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ review: text })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Server responded with ${res.status}`);
+      }
+
+      const data = await res.json();
+      setStatus('');
+      renderVerdict(data);
+    } catch (err) {
+      setStatus('Couldn\u2019t reach the model: ' + err.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Stamp it →';
+    }
+  }
+
+  btn.addEventListener('click', submitReview);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitReview();
+  });
+</script>
+</body>
+</html>
