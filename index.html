@@ -139,12 +139,10 @@
   .result-zone{ min-height:0; margin-top:10px; position:relative; flex:0 0 auto; }
   .verdict{
     display:none;
-    align-items:center; gap:22px;
-    padding:20px 0 4px;
+    padding:20px 170px 4px 0;
     border-top:1px dashed rgba(16,32,46,0.22);
-    animation:stampIn .38s cubic-bezier(.2,1.4,.4,1);
   }
-  .verdict.show{ display:flex; }
+  .verdict.show{ display:block; }
   @keyframes stampIn{
     0%{ opacity:0; transform:scale(1.4) rotate(-14deg); }
     60%{ opacity:1; }
@@ -154,7 +152,8 @@
     font-family:'Fraunces', serif; font-weight:700; font-size:20px; text-transform:uppercase;
     letter-spacing:0.06em; border:3px solid currentColor; border-radius:10px;
     padding:10px 18px; transform:rotate(-6deg); white-space:nowrap;
-    position:relative;
+    position:absolute; bottom:24px; right:24px;
+    animation:stampIn .38s cubic-bezier(.2,1.4,.4,1);
   }
   .stamp::after{
     content:""; position:absolute; inset:3px; border:1px solid currentColor; border-radius:7px; opacity:0.5;
@@ -163,7 +162,7 @@
   .stamp.negative{ color:var(--negative); }
   .stamp.neutral{ color:var(--neutral); }
 
-  .ledger{ font-family:'IBM Plex Mono', monospace; font-size:12px; flex:1; }
+  .ledger{ font-family:'IBM Plex Mono', monospace; font-size:12px; }
   .ledger-row{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
   .ledger-row .lbl{ width:64px; text-transform:uppercase; letter-spacing:0.04em; color:rgba(16,32,46,0.55); }
   .ledger-row .bar-track{ flex:1; height:6px; background:rgba(16,32,46,0.1); border-radius:4px; overflow:hidden; }
