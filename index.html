@@ -63,8 +63,8 @@
 
   /* HERO */
   .hero{
-    display:grid; grid-template-columns:0.68fr 1.32fr; gap:24px;
-    padding:16px 0; align-items:start;
+    display:flex; flex-direction:column; gap:14px;
+    padding:16px 0; align-items:stretch;
     flex:1 1 auto; min-height:0;
   }
   @media (max-width:860px){ .hero{ grid-template-columns:1fr; gap:36px; padding:40px 0 24px; } }
@@ -92,9 +92,11 @@
     background:var(--parchment);
     color:var(--ink-deep);
     border-radius:var(--radius);
-    padding:28px;
+    padding:24px;
     position:relative;
     box-shadow:0 30px 60px -20px rgba(0,0,0,0.5);
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column;
     background-image:
       repeating-linear-gradient(0deg, rgba(16,32,46,0.035) 0px, rgba(16,32,46,0.035) 1px, transparent 1px, transparent 32px);
   }
@@ -109,7 +111,7 @@
     letter-spacing:0.1em; color:rgba(16,32,46,0.55); margin-bottom:10px; display:block;
   }
   textarea{
-    width:100%; min-height:70px; resize:vertical;
+    width:100%; flex:1 1 auto; min-height:0; resize:none;
     border:none; background:transparent; outline:none;
     font-family:'Fraunces', serif; font-size:17px; line-height:1.4; color:var(--ink-deep);
     padding:0; margin-bottom:10px;
