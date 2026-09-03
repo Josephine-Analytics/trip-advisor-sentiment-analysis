@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
 
-# Your fine-tuned model on Hugging Face Hub: huggingface.co/JosephineNamyalo/Sentiment_Model
+# The fine-tuned model on Hugging Face Hub: huggingface.co/JosephineNamyalo/Sentiment_Model
 # Can be overridden via the HF_MODEL_REPO environment variable (set this on Render).
 MODEL_REPO = os.environ.get("HF_MODEL_REPO", "JosephineNamyalo/Sentiment_Model")
 
